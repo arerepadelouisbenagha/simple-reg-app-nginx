@@ -1,4 +1,4 @@
-name: Build and Deploy Nginx to AWS ECR
+name: Build Nginx Image and Push Image to AWS ECR
 
 on:
   push:
@@ -26,18 +26,15 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
-        
-    - name: Build Docker Image
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
-        tags: ${{ env.AWS_REGISTRY }}/nginx:${{ env.TAG_NAME }}
 
     - name: Login to Amazon ECR       
       id: login-ecr
       run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.AWS_REGISTRY }}
 
-    - name: Push image to Amazon ECR
+    - name: Build Docker Image
+      run: |
+        docker build -f Dockerfile -t ${{ env.AWS_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.TAG_NAME }} .
+
+    - name: Push Docker image to Amazon ECR
       run: |
           docker push ${{ env.AWS_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.TAG_NAME }}
