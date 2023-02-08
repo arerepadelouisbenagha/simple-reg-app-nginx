@@ -10,6 +10,7 @@ env:
   AWS_REGISTRY: 375866976303.dkr.ecr.us-east-1.amazonaws.com/reg-app
   AWS_REGION: us-east-1
   TAG_NAME: v1
+  ECR_REPOSITORY: reg-app
 
 jobs:
   build:
@@ -37,9 +38,6 @@ jobs:
       id: login-ecr
       run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.AWS_REGISTRY }}
 
-    - name: Push to AWS ECR
-      uses: aws-actions/amazon-ecr-push@v1
-      with:
-        region: ${{ env.AWS_REGION }}
-        registry-url: ${{ env.AWS_REGISTRY }}
-        tags: nginx:${{ env.TAG_NAME }}
+    - name: Push image to Amazon ECR
+      run: |
+          docker push ${{ env.AWS_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.TAG_NAME }}
